@@ -3,7 +3,7 @@
 Pipeline de dados criado como desafio final do curso: da fonte pública aos
 indicadores, usando Python, SQL, DuckDB, testes e Git. O projeto explora
 comportamentos de compra — frequência, tamanho das cestas, produtos e
-recompras — em vez de reproduzir os indicadores do pipeline Olist do curso.
+recompras — em vez de reproduzir os indicadores do pipeline Spec do curso.
 
 ## Fonte e licença
 
@@ -118,7 +118,7 @@ transformação estão documentados nas docstrings dos módulos.
 
 ### Uso de IA e conferência
 
-A IA inicialmente recebeu especificações de exemplo feitas para a Olist,
+A IA inicialmente recebeu especificações de exemplo feitas para a Spec,
 com conceitos como receita, entrega e localização que não existem neste
 dataset. A conferência das seis tabelas e das colunas disponíveis mostrou
 essa diferença; os indicadores foram então adaptados para cestas, horários,
