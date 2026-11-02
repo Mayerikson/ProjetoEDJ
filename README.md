@@ -99,6 +99,16 @@ Para abrir o dashboard:
 uv run streamlit run app.py
 ```
 
+Para exportar uma prévia HTML autocontida do dashboard:
+
+```powershell
+uv run python -m relatorio
+```
+
+O comando cria `dashboard_preview.html` na raiz, que pode ser aberto no
+navegador e compartilhado para revisão. O arquivo é ignorado pelo Git, pois é
+uma saída gerada localmente.
+
 Para executar os testes unitários e medir a cobertura:
 
 ```powershell
