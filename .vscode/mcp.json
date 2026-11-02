@@ -3,9 +3,14 @@
     "duckdb": {
       "command": "uvx",
       "args": [
+        "--overrides",
+        "${workspaceFolder}\\.vscode\\duckdb-mcp-overrides.txt",
+        "--from",
+        "mcp-server-motherduck==1.1.0",
         "mcp-server-motherduck",
         "--db-path",
-        "${workspaceFolder}\\instacart.duckdb"
+        "${workspaceFolder}\\instacart.duckdb",
+        "--ephemeral-connections"
       ]
     }
   }
