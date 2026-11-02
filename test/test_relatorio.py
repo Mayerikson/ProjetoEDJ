@@ -65,3 +65,7 @@ def test_exporta_html_autocontido_com_dados_sinteticos(
     assert "Pedidos por dia da semana" in conteudo
     assert "plotly.js" in conteudo
     assert "Apple" in conteudo
+    assert conteudo.count('class="chart span-') == 9
+    assert "grid-template-columns: repeat(12" in conteudo
+    assert "Volume e alcance" in conteudo
+    assert "Composição e recorrência" in conteudo

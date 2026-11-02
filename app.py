@@ -53,92 +53,91 @@ except duckdb.Error as exc:
     st.error(f"Não foi possível ler os marts: {exc}. Execute `{COMANDO_MARTS}`.")
     st.stop()
 
+kpis = dados["indicadores_gerais"].iloc[0]
 st.caption(
-    "Os itens analisados combinam prior e train; pedidos test não têm itens "
-    "rotulados. O dataset não contém preço nem data de calendário."
+    "Pedidos e itens analisados combinam os conjuntos prior e train; os pedidos "
+    "test não têm itens rotulados. O dataset não contém preço nem data de calendário."
 )
 
-kpis = dados["indicadores_gerais"].iloc[0]
-for inicio in (0, 3):
-    colunas = st.columns(3)
-    metricas = (
-        (
-            "Pedidos observados",
-            painel.numero(kpis["total_pedidos"]),
-            "Pedidos prior e train.",
-        ),
-        (
-            "Usuários",
-            painel.numero(kpis["total_usuarios"]),
-            "Usuários com pedidos prior ou train.",
-        ),
-        (
-            "Itens nos pedidos",
-            painel.numero(kpis["total_itens"]),
-            "Itens combinados de prior e train.",
-        ),
-        (
-            "Produtos comprados",
-            painel.numero(kpis["produtos_comprados"]),
-            "Produtos distintos presentes nos itens.",
-        ),
-        (
-            "Itens recomprados",
-            painel.pct(kpis["percentual_itens_recomprados"], 2),
-            "Percentual de itens marcados como recompra.",
-        ),
-        (
-            "Média de itens por pedido",
-            painel.numero(kpis["media_itens_por_pedido"], 2),
-            "Média já calculada no mart de indicadores gerais.",
-        ),
-    )
-    for coluna, (rotulo, valor, ajuda) in zip(
-        colunas, metricas[inicio : inicio + 3], strict=True
-    ):
-        coluna.metric(rotulo, valor, help=ajuda)
+st.subheader("Volume e alcance")
+colunas = st.columns(3)
+colunas[0].metric(
+    "Pedidos observados · prior + train",
+    painel.numero(kpis["total_pedidos"]),
+    help="Quantidade total de pedidos dos conjuntos prior e train.",
+)
+colunas[1].metric(
+    "Usuários · prior + train",
+    painel.numero(kpis["total_usuarios"]),
+    help="Usuários distintos com pedidos nos conjuntos prior e train.",
+)
+colunas[2].metric(
+    "Itens nos pedidos · prior + train",
+    painel.numero(kpis["total_itens"]),
+    help="Itens combinados dos pedidos prior e train.",
+)
 
-st.subheader("Padrões de pedidos")
+st.subheader("Composição e recorrência")
+colunas = st.columns(3)
+colunas[0].metric(
+    "Produtos distintos · prior + train",
+    painel.numero(kpis["produtos_comprados"]),
+    help="Produtos distintos presentes nos itens observados.",
+)
+colunas[1].metric(
+    "Itens recomprados · % dos itens",
+    painel.pct(kpis["percentual_itens_recomprados"], 2),
+    help="Percentual dos itens marcado como recompra.",
+)
+colunas[2].metric(
+    "Itens por pedido · média",
+    painel.numero(kpis["media_itens_por_pedido"], 2),
+    help="Média calculada no mart de indicadores gerais.",
+)
+
+st.subheader("Pedidos ao longo do dia")
+st.plotly_chart(
+    painel.grafico_pedidos_por_hora(dados["pedidos_por_hora"]),
+    width="stretch",
+)
+
+st.subheader("Padrões da semana")
 esquerda, direita = st.columns(2)
 esquerda.plotly_chart(
     painel.grafico_pedidos_por_dia(dados["pedidos_por_dia_semana"]),
     width="stretch",
 )
 direita.plotly_chart(
-    painel.grafico_pedidos_por_hora(dados["pedidos_por_hora"]),
-    width="stretch",
-)
-st.plotly_chart(
     painel.grafico_pedidos_por_dia_e_hora(dados["pedidos_por_dia_e_hora"]),
     width="stretch",
 )
 
-st.subheader("Cestas e recorrência")
-esquerda, direita = st.columns(2)
-esquerda.plotly_chart(
+st.subheader("Cestas e recompra")
+colunas = st.columns(3)
+colunas[0].plotly_chart(
     painel.grafico_intervalo_entre_pedidos(dados["intervalo_entre_pedidos"]),
     width="stretch",
 )
-direita.plotly_chart(
+colunas[1].plotly_chart(
     painel.grafico_tamanho_cestas(dados["distribuicao_tamanho_cestas"]),
     width="stretch",
 )
-st.plotly_chart(
+colunas[2].plotly_chart(
     painel.grafico_recompra_por_posicao(dados["recompra_por_posicao_carrinho"]),
     width="stretch",
 )
 
 st.subheader("Produtos e categorias")
-esquerda, direita = st.columns(2)
-esquerda.plotly_chart(
+colunas = st.columns(3)
+colunas[0].plotly_chart(
     painel.grafico_produtos_mais_comprados(dados["produtos_mais_comprados"]),
     width="stretch",
 )
-direita.plotly_chart(
+colunas[1].plotly_chart(
     painel.grafico_departamentos(dados["desempenho_departamentos"]),
     width="stretch",
 )
-st.plotly_chart(
+colunas[2].plotly_chart(
     painel.grafico_corredores(dados["desempenho_corredores"]),
     width="stretch",
 )

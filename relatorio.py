@@ -26,57 +26,92 @@ def gerar_dashboard_html(caminho_saida: str | Path = CAMINHO_SAIDA) -> Path:
     """Gera um HTML autocontido para abrir no navegador e compartilhar."""
     dados = painel.ler(MARTS)
     kpis = dados["indicadores_gerais"].iloc[0]
-    metricas = (
-        ("Pedidos observados", painel.numero(kpis["total_pedidos"]), "prior + train"),
-        ("Usuários", painel.numero(kpis["total_usuarios"]), "prior + train"),
-        ("Itens nos pedidos", painel.numero(kpis["total_itens"]), "prior + train"),
-        ("Produtos comprados", painel.numero(kpis["produtos_comprados"]), "distintos"),
+    grupos_metricas = (
         (
-            "Itens recomprados",
-            painel.pct(kpis["percentual_itens_recomprados"], 2),
-            "percentual dos itens",
+            "Volume e alcance",
+            (
+                (
+                    "Pedidos observados · prior + train",
+                    painel.numero(kpis["total_pedidos"]),
+                    "contagem de pedidos",
+                ),
+                (
+                    "Usuários · prior + train",
+                    painel.numero(kpis["total_usuarios"]),
+                    "usuários distintos",
+                ),
+                (
+                    "Itens nos pedidos · prior + train",
+                    painel.numero(kpis["total_itens"]),
+                    "contagem de itens",
+                ),
+            ),
         ),
         (
-            "Média de itens por pedido",
-            painel.numero(kpis["media_itens_por_pedido"], 2),
-            "média calculada no SQL",
+            "Composição e recorrência",
+            (
+                (
+                    "Produtos distintos · prior + train",
+                    painel.numero(kpis["produtos_comprados"]),
+                    "produtos nos itens",
+                ),
+                (
+                    "Itens recomprados · % dos itens",
+                    painel.pct(kpis["percentual_itens_recomprados"], 2),
+                    "percentual de recompra",
+                ),
+                (
+                    "Itens por pedido · média",
+                    painel.numero(kpis["media_itens_por_pedido"], 2),
+                    "média calculada no SQL",
+                ),
+            ),
         ),
     )
     figuras = (
         (
-            "Padrões de pedidos",
-            painel.grafico_pedidos_por_dia(dados["pedidos_por_dia_semana"]),
-        ),
-        (
-            "Padrões de pedidos",
+            "Pedidos ao longo do dia",
+            "span-12",
             painel.grafico_pedidos_por_hora(dados["pedidos_por_hora"]),
         ),
         (
-            "Padrões de pedidos",
+            "Padrões da semana",
+            "span-6",
+            painel.grafico_pedidos_por_dia(dados["pedidos_por_dia_semana"]),
+        ),
+        (
+            "Padrões da semana",
+            "span-6",
             painel.grafico_pedidos_por_dia_e_hora(dados["pedidos_por_dia_e_hora"]),
         ),
         (
-            "Cestas e recorrência",
+            "Cestas e recompra",
+            "span-4",
             painel.grafico_intervalo_entre_pedidos(dados["intervalo_entre_pedidos"]),
         ),
         (
-            "Cestas e recorrência",
+            "Cestas e recompra",
+            "span-4",
             painel.grafico_tamanho_cestas(dados["distribuicao_tamanho_cestas"]),
         ),
         (
-            "Cestas e recorrência",
+            "Cestas e recompra",
+            "span-4",
             painel.grafico_recompra_por_posicao(dados["recompra_por_posicao_carrinho"]),
         ),
         (
             "Produtos e categorias",
+            "span-4",
             painel.grafico_produtos_mais_comprados(dados["produtos_mais_comprados"]),
         ),
         (
             "Produtos e categorias",
+            "span-4",
             painel.grafico_departamentos(dados["desempenho_departamentos"]),
         ),
         (
             "Produtos e categorias",
+            "span-4",
             painel.grafico_corredores(dados["desempenho_corredores"]),
         ),
     )
@@ -84,7 +119,7 @@ def gerar_dashboard_html(caminho_saida: str | Path = CAMINHO_SAIDA) -> Path:
     conteudo_graficos = []
     secao_atual = None
     inclui_plotly = True
-    for titulo_secao, figura in figuras:
+    for titulo_secao, largura, figura in figuras:
         if titulo_secao != secao_atual:
             if secao_atual is not None:
                 conteudo_graficos.append("</div></section>")
@@ -100,18 +135,29 @@ def gerar_dashboard_html(caminho_saida: str | Path = CAMINHO_SAIDA) -> Path:
             config={"responsive": True, "displaylogo": False},
         )
         inclui_plotly = False
-        conteudo_graficos.append(f'<article class="chart">{grafico_html}</article>')
+        conteudo_graficos.append(
+            f'<article class="chart {largura}">{grafico_html}</article>'
+        )
     conteudo_graficos.append("</div></section>")
 
     cartoes = "".join(
         (
-            '<article class="metric">'
-            f'<span class="metric-label">{escape(rotulo)}</span>'
-            f"<strong>{escape(valor)}</strong>"
-            f'<span class="metric-help">{escape(ajuda)}</span>'
-            "</article>"
+            '<section class="metric-group">'
+            f"<h2>{escape(titulo)}</h2>"
+            '<div class="metric-grid">'
+            + "".join(
+                (
+                    '<article class="metric">'
+                    f'<span class="metric-label">{escape(rotulo)}</span>'
+                    f"<strong>{escape(valor)}</strong>"
+                    f'<span class="metric-help">{escape(ajuda)}</span>'
+                    "</article>"
+                )
+                for rotulo, valor, ajuda in metricas
+            )
+            + "</div></section>"
         )
-        for rotulo, valor, ajuda in metricas
+        for titulo, metricas in grupos_metricas
     )
     documento = f"""<!doctype html>
 <html lang="pt-BR">
@@ -134,27 +180,36 @@ def gerar_dashboard_html(caminho_saida: str | Path = CAMINHO_SAIDA) -> Path:
     .eyebrow {{ color: #50708f; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }}
     h1 {{ margin: 8px 0 0; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.04em; }}
     .subhead {{ max-width: 660px; color: #60738a; font-size: 14px; line-height: 1.6; }}
-    .metrics {{ display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }}
     .metric, .chart {{ background: white; border: 1px solid #e6ecf2; border-radius: 16px; box-shadow: 0 5px 18px #2538580a; }}
+    .metric-group {{ margin-top: 20px; }}
+    .metric-group h2 {{ margin: 0 0 10px; font-size: 15px; color: #60738a; }}
+    .metric-grid {{ display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; }}
     .metric {{ min-height: 126px; padding: 18px; display: flex; flex-direction: column; gap: 8px; }}
+    .metric {{ grid-column: span 4; }}
     .metric-label {{ color: #60738a; font-size: 12px; font-weight: 650; }}
     .metric strong {{ font-size: clamp(21px, 2vw, 29px); letter-spacing: -.035em; }}
     .metric-help {{ color: #8a9aab; font-size: 11px; }}
     .section {{ margin-top: 34px; }}
     h2 {{ margin: 0 0 14px; font-size: 20px; letter-spacing: -.02em; }}
-    .grid {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }}
+    .grid {{ display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }}
+    .span-12 {{ grid-column: span 12; }}
+    .span-6 {{ grid-column: span 6; }}
+    .span-4 {{ grid-column: span 4; }}
     .chart {{ min-width: 0; padding: 10px 12px; overflow: hidden; }}
-    .chart:last-child:nth-child(odd) {{ grid-column: 1 / -1; }}
     footer {{ margin-top: 30px; color: #718198; font-size: 12px; line-height: 1.6; }}
-    @media (max-width: 1050px) {{ .metrics {{ grid-template-columns: repeat(3, minmax(0, 1fr)); }} }}
+    @media (max-width: 1050px) {{
+      .metric-grid {{ grid-template-columns: repeat(6, minmax(0, 1fr)); }}
+      .metric {{ grid-column: span 2; }}
+      .span-4 {{ grid-column: span 6; }}
+    }}
     @media (max-width: 680px) {{
       .page {{ padding-top: 26px; }}
       header {{ display: block; }}
       .subhead {{ margin-top: 12px; }}
-      .metrics {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }}
+      .metric-grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }}
       .metric {{ min-height: 112px; padding: 14px; }}
       .grid {{ grid-template-columns: 1fr; }}
-      .chart:last-child:nth-child(odd) {{ grid-column: auto; }}
+      .span-12, .span-6, .span-4 {{ grid-column: 1; }}
     }}
   </style>
 </head>
@@ -168,7 +223,7 @@ def gerar_dashboard_html(caminho_saida: str | Path = CAMINHO_SAIDA) -> Path:
       <p class="subhead">Padrões de pedidos, composição das cestas e recorrência
       calculados nos dados prior e train. Valores apresentados conforme os marts.</p>
     </header>
-    <section class="metrics" aria-label="Indicadores gerais">{cartoes}</section>
+    {cartoes}
     {"".join(conteudo_graficos)}
     <footer>
       Os pedidos test não possuem itens rotulados. O dataset não contém preço

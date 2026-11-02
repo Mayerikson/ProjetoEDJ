@@ -32,6 +32,22 @@ COR = "#2E86C1"
 DIAS_SEMANA = ("Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado")
 
 
+def _finalizar_grafico(figura: go.Figure) -> go.Figure:
+    figura.update_layout(
+        template="plotly_white",
+        autosize=True,
+        height=390,
+        margin={"l": 48, "r": 24, "t": 58, "b": 48},
+        font={"family": "Inter, Segoe UI, sans-serif", "color": "#334155"},
+        title={"x": 0.02, "xanchor": "left", "font": {"size": 16}},
+        paper_bgcolor="rgba(255,255,255,0)",
+        plot_bgcolor="rgba(255,255,255,0)",
+    )
+    figura.update_xaxes(gridcolor="#E8EDF3", zeroline=False)
+    figura.update_yaxes(gridcolor="#E8EDF3", zeroline=False)
+    return figura
+
+
 class MartsAusentesError(Exception):
     """Informa todas as tabelas mart que não existem no banco."""
 
@@ -93,7 +109,7 @@ def grafico_pedidos_por_dia(dados: pd.DataFrame) -> go.Figure:
         ticktext=list(DIAS_SEMANA),
     )
     figura.update_yaxes(title="Pedidos")
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_pedidos_por_hora(dados: pd.DataFrame) -> go.Figure:
@@ -107,7 +123,7 @@ def grafico_pedidos_por_hora(dados: pd.DataFrame) -> go.Figure:
     )
     figura.update_xaxes(title="Hora do dia")
     figura.update_yaxes(title="Pedidos")
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_pedidos_por_dia_e_hora(dados: pd.DataFrame) -> go.Figure:
@@ -127,7 +143,7 @@ def grafico_pedidos_por_dia_e_hora(dados: pd.DataFrame) -> go.Figure:
         tickvals=list(range(7)),
         ticktext=list(DIAS_SEMANA),
     )
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_intervalo_entre_pedidos(dados: pd.DataFrame) -> go.Figure:
@@ -144,7 +160,7 @@ def grafico_intervalo_entre_pedidos(dados: pd.DataFrame) -> go.Figure:
     )
     figura.update_xaxes(title="Dias desde o pedido anterior")
     figura.update_yaxes(title="Pedidos")
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_tamanho_cestas(dados: pd.DataFrame) -> go.Figure:
@@ -158,7 +174,7 @@ def grafico_tamanho_cestas(dados: pd.DataFrame) -> go.Figure:
     )
     figura.update_xaxes(title="Itens por pedido")
     figura.update_yaxes(title="Pedidos")
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_produtos_mais_comprados(dados: pd.DataFrame) -> go.Figure:
@@ -172,7 +188,7 @@ def grafico_produtos_mais_comprados(dados: pd.DataFrame) -> go.Figure:
     )
     figura.update_xaxes(title="Compras")
     figura.update_yaxes(title="Produto", autorange="reversed")
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_departamentos(dados: pd.DataFrame) -> go.Figure:
@@ -186,7 +202,7 @@ def grafico_departamentos(dados: pd.DataFrame) -> go.Figure:
     )
     figura.update_xaxes(title="Itens")
     figura.update_yaxes(title="Departamento", autorange="reversed")
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_corredores(dados: pd.DataFrame) -> go.Figure:
@@ -200,7 +216,7 @@ def grafico_corredores(dados: pd.DataFrame) -> go.Figure:
     )
     figura.update_xaxes(title="Itens")
     figura.update_yaxes(title="Corredor", autorange="reversed")
-    return figura
+    return _finalizar_grafico(figura)
 
 
 def grafico_recompra_por_posicao(dados: pd.DataFrame) -> go.Figure:
@@ -214,4 +230,4 @@ def grafico_recompra_por_posicao(dados: pd.DataFrame) -> go.Figure:
     )
     figura.update_xaxes(title="Posição no carrinho")
     figura.update_yaxes(title="Itens recomprados (%)")
-    return figura
+    return _finalizar_grafico(figura)
