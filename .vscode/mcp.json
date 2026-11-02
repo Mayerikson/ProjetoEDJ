@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "duckdb": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-motherduck",
+        "--db-path",
+        "${workspaceFolder}\\instacart.duckdb"
+      ]
+    }
+  }
+}
