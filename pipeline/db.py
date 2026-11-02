@@ -10,10 +10,11 @@ A interface pública tem somente ``PASTA_RAW``, ``conectar``, ``criar_schema``
 e ``gravar``. Ela não lê arquivos, escolhe nomes de tabela, imprime mensagens
 nem transforma dados, pois essas decisões pertencem a cada etapa e devem ficar
 visíveis nela. ``criar_schema`` é idempotente para permitir reexecuções.
-``gravar`` substitui a tabela pelos valores e tipos presentes no DataFrame,
-remove o registro temporário usado na operação e consulta a contagem persistida
-no banco; assim, nulos e textos não são alterados e a contagem exibida reflete
-o conteúdo gravado, não o tamanho do objeto em memória.
+``gravar`` substitui a tabela pelos valores e tipos presentes no DataFrame ou
+na relação DuckDB, remove o registro temporário usado na operação e consulta
+a contagem persistida no banco; assim, nulos e textos não são alterados e a
+contagem exibida reflete o conteúdo gravado, não o tamanho do objeto em
+memória.
 """
 
 from pathlib import Path as _Path
@@ -39,11 +40,15 @@ def criar_schema(con: _duckdb.DuckDBPyConnection, nome: str) -> None:
 
 def gravar(
     con: _duckdb.DuckDBPyConnection,
-    df: _pd.DataFrame,
+    df: _pd.DataFrame | _duckdb.DuckDBPyRelation,
     schema: str,
     tabela: str,
 ) -> int:
-    """Recria a tabela a partir do DataFrame e retorna a contagem persistida."""
+    """Recria a tabela a partir de dados tabulares e retorna a contagem persistida.
+
+    Além de DataFrames, aceita relações DuckDB para que transformações grandes
+    possam ser gravadas sem materializar todas as linhas em memória.
+    """
     schema_sql = '"' + schema.replace('"', '""') + '"'
     tabela_sql = '"' + tabela.replace('"', '""') + '"'
     registro = f"_dataframe_{_uuid4().hex}"
