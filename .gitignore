@@ -1,2 +1,7 @@
 __pycache__/
 *.py[cod]
+.venv/
+.coverage
+instacart.duckdb
+raw/*.csv
+raw/*.csv.gz
