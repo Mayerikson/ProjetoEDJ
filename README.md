@@ -128,7 +128,7 @@ transformação estão documentados nas docstrings dos módulos.
 
 ### Uso de IA e conferência
 
-A IA inicialmente recebeu especificações de exemplo feitas para a Spec,
+A IA inicialmente recebeu especificações de exemplo feitas para a Olist,
 com conceitos como receita, entrega e localização que não existem neste
 dataset. A conferência das seis tabelas e das colunas disponíveis mostrou
 essa diferença; os indicadores foram então adaptados para cestas, horários,
